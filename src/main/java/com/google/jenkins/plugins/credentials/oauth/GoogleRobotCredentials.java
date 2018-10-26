@@ -31,7 +31,8 @@ import hudson.security.ACL;
 import hudson.util.ListBoxModel;
 import hudson.util.Secret;
 import jenkins.model.Jenkins;
-
+import hudson.model.Item;
+import org.kohsuke.stapler.Stapler;
 /**
  * The base implementation of service account (aka robot) credentials using
  * OAuth2.  These robot credentials can be used to access Google APIs as the
@@ -163,13 +164,22 @@ public abstract class GoogleRobotCredentials
       throw new IllegalArgumentException(
           Messages.GoogleRobotCredentials_NoAnnotation(clazz.getSimpleName()));
     }
-
     CredentialsListBoxModel listBox = new CredentialsListBoxModel(requirement);
-    Iterable<GoogleRobotCredentials> allGoogleCredentials =
+    /*   Iterable<GoogleRobotCredentials> allGoogleCredentials =
         CredentialsProvider.lookupCredentials(
             GoogleRobotCredentials.class, Jenkins.getInstance(), ACL.SYSTEM,
             ImmutableList.<DomainRequirement>of(requirement));
 
+    for (GoogleRobotCredentials credentials : allGoogleCredentials) {
+      String name = CredentialsNameProvider.name(credentials);
+      listBox.add(name, credentials.getId());
+    }*/
+    Item item = Stapler.getCurrentRequest().findAncestorObject(Item.class);
+    Iterable<GoogleRobotCredentials> allGoogleCredentials =
+        CredentialsProvider.lookupCredentials(
+            GoogleRobotCredentials.class, item, ACL.SYSTEM,
+            ImmutableList.<DomainRequirement>of(requirement));
+    
     for (GoogleRobotCredentials credentials : allGoogleCredentials) {
       String name = CredentialsNameProvider.name(credentials);
       listBox.add(name, credentials.getId());
@@ -181,10 +191,19 @@ public abstract class GoogleRobotCredentials
    * Retrieves the {@link GoogleRobotCredentials} identified by {@code id}.
    */
   public static GoogleRobotCredentials getById(String id) {
+  /*
     Iterable<GoogleRobotCredentials> allGoogleCredentials =
         CredentialsProvider.lookupCredentials(
             GoogleRobotCredentials.class, Jenkins.getInstance(), ACL.SYSTEM);
-
+  */
+    //Jenkins jenkins = Jenkins.getInstance();
+    Item item = Stapler.getCurrentRequest().findAncestorObject(Item.class);
+    //Item folder;
+    //  folder = jenkins.getItemByFullName(item.getParent().getFullName());
+    Iterable<GoogleRobotCredentials> allGoogleCredentials =
+        CredentialsProvider.lookupCredentials(
+            GoogleRobotCredentials.class, item, ACL.SYSTEM);
+          
     for (GoogleRobotCredentials credentials : allGoogleCredentials) {
       if (credentials.getId().equals(id)) {
         return credentials;
